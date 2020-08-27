@@ -15,5 +15,6 @@ Drives, select the drives you want to create history for.
 Run, runs a snapshot immediately.
 Save, saves the current configuration and minimizes the app to the tray.
 Remove Task, removes the app from "Task Scheduler".
+Show notifications, show a system notification when it's run. If this is disabled you will still get a notification if the update was unsuccessfull.
 
 On save the program will be scheduled to run the next time the current user logs in.

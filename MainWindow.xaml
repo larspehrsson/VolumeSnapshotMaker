@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        Closing="DataWindow_Closing"
+        Closing="Window_Closing"
         mc:Ignorable="d"
         Title="VSS Volume Shadow Copy Service Configuration" Height="316.369" Width="446.601">
     <Grid>
