@@ -116,9 +116,18 @@ namespace SnapshotMaker
             RunVSS(null, null);
         }
 
+        /// <summary>
+        /// minimizes to systemtray, unless you have rightclicked on tray icon and selected "exit"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            Notification.Visible = false;
+            if (!forceexit)
+            {
+                e.Cancel = true;
+                Hide();
+            }
         }
 
         /// <summary>
@@ -127,27 +136,52 @@ namespace SnapshotMaker
         private bool IsElevated =>
             new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
+        private bool forceexit = false;
+
+        /// <summary>
+        /// Closes the program
+        /// </summary>
+        /// <param name="Sender"></param>
+        /// <param name="e"></param>
         private void MenuExitClick(object Sender, EventArgs e)
         {
             // Close the form, which closes the application.
+            Notification.Visible = false;
+            forceexit = true;
             Close();
         }
 
+        /// <summary>
+        /// Create a new volume shadow copy
+        /// </summary>
+        /// <param name="Sender"></param>
+        /// <param name="e"></param>
         private async void MenuRunClick(object Sender, EventArgs e)
         {
             RunVSS(null, null);
         }
 
+        /// <summary>
+        /// Open the main window
+        /// </summary>
+        /// <param name="Sender"></param>
+        /// <param name="e"></param>
         private async void MenuOpenClick(object Sender, EventArgs e)
         {
             Show();
         }
 
+        /// <summary>
+        /// Creates the VSS history
+        /// </summary>
+        /// <param name="myObject"></param>
+        /// <param name="myEventArgs"></param>
         private void RunVSS(object myObject, EventArgs myEventArgs)
         {
             // wmic shadowcopy call create Volume=C:\
 
             var error = "";
+            var lastresult = "";
 
             foreach (var drive in SelectedDrivesList)
             {
@@ -170,6 +204,7 @@ namespace SnapshotMaker
                 {
                     var line = proc.StandardOutput.ReadLine();
                     Debug.WriteLine(line);
+                    lastresult += line + Environment.NewLine;
                 }
 
                 while (!proc.StandardError.EndOfStream)
@@ -178,6 +213,7 @@ namespace SnapshotMaker
                     Debug.WriteLine(line);
                     if (line != "")
                         error += line + Environment.NewLine;
+                    lastresult += line + Environment.NewLine;
                 }
             }
 
@@ -194,8 +230,15 @@ namespace SnapshotMaker
                     Notification.ShowBalloonTip(5);
                 }
             }
+
+            Notification.Text = $"Last update at {DateTime.Now} {(error != "" ? "FAILED" : "was successful")} ";
         }
 
+        /// <summary>
+        /// Saves the configuration to the registry
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             var hours = int.Parse(HourInterval.Text);
@@ -216,6 +259,11 @@ namespace SnapshotMaker
             RunVSS(null, null);
         }
 
+        /// <summary>
+        /// Forces a run of VSS
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunButton_Click(object sender, RoutedEventArgs e)
         {
             SelectedDrivesList = DrivesListBox.SelectedItems.Cast<DriveInfo>().ToList().Select(c => c.ToString())
@@ -224,11 +272,18 @@ namespace SnapshotMaker
             RunVSS(null, null);
         }
 
+        /// <summary>
+        /// Checks to see if the task is already installed in Task Scheduler
+        /// </summary>
+        /// <returns></returns>
         private bool isTaskInstalled()
         {
             return TaskService.Instance.GetTask($@"\{taskname}") != null;
         }
 
+        /// <summary>
+        /// Creates a task in task-scheduler. Runs the program in elevated mode
+        /// </summary>
         private void CreateTask()
         {
             // Create a new task definition for the local machine and assign properties
@@ -254,6 +309,11 @@ namespace SnapshotMaker
             TaskService.Instance.RootFolder.RegisterTaskDefinition(taskname, td);
         }
 
+        /// <summary>
+        /// Removes the task from the Task Scheduler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RemoveTask_Click(object sender, RoutedEventArgs e)
         {
             if (!isTaskInstalled())
