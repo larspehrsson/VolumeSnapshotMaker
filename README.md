@@ -11,10 +11,10 @@ With this little tool you can easily schedule the creation of shadow copy's on a
 
 ![](Screenshot.png)
 
-Drives, select the drives you want to create history for.
-Run, runs a snapshot immediately.
-Save, saves the current configuration and minimizes the app to the tray.
-Remove Task, removes the app from "Task Scheduler".
-Show notifications, show a system notification when it's run. If this is disabled you will still get a notification if the update was unsuccessfull.
+* Drives: select the drives you want to create history for.
+* Run: runs a snapshot immediately.
+* Save: saves the current configuration, minimizes the app to the tray and starts to run in the background.
+* Remove Task: removes the app from "Task Scheduler".
+* Show notifications: show a system notification when it's run. If this is disabled you will still get a notification if the update was unsuccessfull.
 
 On save the program will be scheduled to run the next time the current user logs in.
