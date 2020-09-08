@@ -14,6 +14,22 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace SnapshotMaker
 {
+    public class vssStorage
+    {
+        public string volume { get; set; }
+        public string used { get; set; }
+        public string allocated { get; set; }
+        public string maximum { get; set; }
+        public int number { get; set; }
+        public DateTime oldest { get; set; }
+    }
+
+    public class shadow
+    {
+        public string volume { get; set; }
+        public DateTime created { get; set; }
+    }
+
     /// <summary>
     ///     Interaction logic for MainWindow.xaml
     /// </summary>
@@ -23,6 +39,8 @@ namespace SnapshotMaker
         private static readonly Timer RunTimer = new Timer();
         private static readonly NotifyIcon Notification = new NotifyIcon();
         private List<string> SelectedDrivesList = new List<string>();
+        private List<vssStorage> VSSStorageList = new List<vssStorage>();
+        private List<shadow> shadowList = new List<shadow>();
 
         public MainWindow()
         {
@@ -110,6 +128,9 @@ namespace SnapshotMaker
 
             Notification.Visible = true;
 
+            getShadowStorage();
+            GetShadows();
+
             if (SelectedDrivesList.Count > 0)
                 Hide();
 
@@ -168,6 +189,8 @@ namespace SnapshotMaker
         /// <param name="e"></param>
         private async void MenuOpenClick(object Sender, EventArgs e)
         {
+            getShadowStorage();
+            GetShadows();
             Show();
         }
 
@@ -232,6 +255,144 @@ namespace SnapshotMaker
             }
 
             Notification.Text = $"Last update at {DateTime.Now} {(error != "" ? "FAILED" : "was successful")} ";
+        }
+
+        private void getShadowStorage()
+        {
+            // vssadmin list shadowstorage
+            VSSStorageList = new List<vssStorage>();
+
+            var error = "";
+            var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "vssadmin",
+                    Arguments = "list shadowstorage",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    Verb = "runas"
+                }
+            };
+
+            vssStorage vss = new vssStorage();
+            proc.Start();
+            while (!proc.StandardOutput.EndOfStream)
+            {
+                var line = proc.StandardOutput.ReadLine();
+                Debug.WriteLine(line);
+                var kolidx = line.IndexOf(":");
+                if (line.Contains("For volume"))
+                {
+                    vss.volume = line.Substring(kolidx + 3, 2);
+                }
+                if (line.Contains("  Used"))
+                {
+                    vss.used = line.Substring(kolidx + 2);
+                }
+                if (line.Contains("  Allocated"))
+                {
+                    vss.allocated = line.Substring(kolidx + 2);
+                }
+                if (line.Contains("  Maximum"))
+                {
+                    vss.maximum = line.Substring(kolidx + 2);
+                }
+
+                if (line.Trim() == "" && !string.IsNullOrEmpty(vss.volume))
+                {
+                    VSSStorageList.Add(vss);
+                    vss = new vssStorage();
+                }
+            }
+
+            while (!proc.StandardError.EndOfStream)
+            {
+                var line = proc.StandardError.ReadLine();
+                Debug.WriteLine(line);
+                if (line != "")
+                    error += line + Environment.NewLine;
+            }
+
+            if (error != "")
+            {
+                Notification.BalloonTipText = $"Error getting storage usage {error}";
+                Notification.ShowBalloonTip(10);
+            }
+
+            UsageListBox.ItemsSource = null;
+            UsageListBox.ItemsSource = VSSStorageList.OrderBy(c => c.volume);
+        }
+
+        private void GetShadows()
+        {
+            // vssadmin list shadows
+
+            var error = "";
+
+            var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "vssadmin",
+                    Arguments = "list shadows",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    Verb = "runas"
+                }
+            };
+
+            shadow shadow = new shadow();
+            proc.Start();
+            while (!proc.StandardOutput.EndOfStream)
+            {
+                var line = proc.StandardOutput.ReadLine();
+                Debug.WriteLine(line);
+                var kolidx = line.IndexOf(":");
+                if (line.Contains("  Original Volume"))
+                {
+                    shadow.volume = line.Substring(kolidx + 3, 2);
+                }
+                if (line.Contains(" creation time:"))
+                {
+                    var substr = line.Substring(kolidx + 1);
+                    shadow.created = DateTime.Parse(substr);
+                }
+
+                if (line.Trim() == "" && !string.IsNullOrEmpty(shadow.volume))
+                {
+                    shadowList.Add(shadow);
+                    shadow = new shadow();
+                }
+            }
+
+            while (!proc.StandardError.EndOfStream)
+            {
+                var line = proc.StandardError.ReadLine();
+                Debug.WriteLine(line);
+                if (line != "")
+                    error += line + Environment.NewLine;
+            }
+
+            if (error != "")
+            {
+                Notification.BalloonTipText = $"Error getting storage usage {error}";
+                Notification.ShowBalloonTip(10);
+            }
+
+            foreach (var vss in VSSStorageList)
+            {
+                var shadows = shadowList.Where(c => c.volume == vss.volume).ToList();
+                if (vss != null)
+                {
+                    vss.number = shadows.Count;
+                    vss.oldest = shadows.Min(c => c.created);
+                }
+            }
         }
 
         /// <summary>
@@ -324,6 +485,25 @@ namespace SnapshotMaker
             MessageBox.Show("Task has been removed ", "Remove task",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "C:\\Windows\\System32\\SystemPropertiesProtection.exe",
+                    Arguments = "",
+                    //UseShellExecute = false,
+                    //RedirectStandardOutput = true,
+                    //RedirectStandardError = true,
+                    //CreateNoWindow = true,
+                    Verb = "runas"
+                }
+            };
+
+            proc.Start();
         }
     }
 }

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         Closing="Window_Closing"
         mc:Ignorable="d"
-        Title="VSS Volume Shadow Copy Service Configuration" Height="316.369" Width="446.601">
+        Title="VSS Volume Shadow Copy Service Configuration" Height="429.61" Width="701.47">
     <Grid>
 
         <Label Content="Run every" HorizontalAlignment="Left" Margin="10,29,0,0" VerticalAlignment="Top" />
@@ -18,10 +18,13 @@
         <CheckBox Name="NotificationCheckBox" Content="" HorizontalAlignment="Left" Margin="112,66,0,0" VerticalAlignment="Top" />
 
         <Label Content="Drives" HorizontalAlignment="Left" Margin="10,101,0,0" VerticalAlignment="Top" />
-        <ListBox Name="DrivesListBox" SelectionMode="Extended" HorizontalAlignment="Left" Height="145" VerticalAlignment="Top" Width="100" Margin="112,101,0,0" />
+        <ListBox Name="DrivesListBox" SelectionMode="Extended" Margin="112,101,99,0" Height="84" VerticalAlignment="Top" />
 
-        <Button Content="Run" Margin="0,0,115,25" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="RunButton_Click" />
-        <Button Content="Save" Margin="0,0,19,25" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="SaveButton_Click" />
-        <Button Content="Remove Task" Margin="0,0,19,59" Click="RemoveTask_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" />
+        <Button Content="Run" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="84" Click="RunButton_Click" />
+        <Button Content="Save" Margin="0,0,10,35" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="84" Click="SaveButton_Click" />
+        <Button Content="Remove Task" Margin="0,0,10,60" Click="RemoveTask_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="84" />
+        <Button Content="Configure VSS" Margin="0,0,10,85" Click="ButtonBase_OnClick" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="84" />
+        <Label Content="Usage" HorizontalAlignment="Left" Margin="10,190,0,0" VerticalAlignment="Top" />
+        <DataGrid x:Name="UsageListBox" IsEnabled="False" Margin="112,190,99,10" />
     </Grid>
 </Window>
