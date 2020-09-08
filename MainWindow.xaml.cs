@@ -46,8 +46,6 @@ namespace SnapshotMaker
         {
             InitializeComponent();
 
-            CreateTask();
-
             if (!IsElevated)
             {
                 MessageBox.Show("Need to run as administrator. ", "Run as admin",
@@ -201,6 +199,9 @@ namespace SnapshotMaker
         /// <param name="myEventArgs"></param>
         private void RunVSS(object myObject, EventArgs myEventArgs)
         {
+            if (!IsElevated)
+                return;
+
             // wmic shadowcopy call create Volume=C:\
 
             var error = "";
@@ -259,6 +260,9 @@ namespace SnapshotMaker
 
         private void getShadowStorage()
         {
+            if (!IsElevated)
+                return;
+
             // vssadmin list shadowstorage
             VSSStorageList = new List<vssStorage>();
 
@@ -328,6 +332,9 @@ namespace SnapshotMaker
 
         private void GetShadows()
         {
+            if (!IsElevated)
+                return;
+
             // vssadmin list shadows
 
             var error = "";
@@ -447,6 +454,9 @@ namespace SnapshotMaker
         /// </summary>
         private void CreateTask()
         {
+            if (!IsElevated)
+                return;
+
             // Create a new task definition for the local machine and assign properties
             var td = TaskService.Instance.NewTask();
             td.RegistrationInfo.Description = "Update VSS previous versions";
