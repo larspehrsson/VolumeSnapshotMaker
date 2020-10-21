@@ -394,7 +394,7 @@ namespace SnapshotMaker
             foreach (var vss in VSSStorageList)
             {
                 var shadows = shadowList.Where(c => c.volume == vss.volume).ToList();
-                if (vss != null)
+                if (vss != null && shadows.Count > 0)
                 {
                     vss.number = shadows.Count;
                     vss.oldest = shadows.Min(c => c.created);
